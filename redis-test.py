@@ -1,6 +1,6 @@
 import json
 import redis
-import Clusters.user_embedding as embedding_api
+import user_embedding as embedding_api
 
 print("Starting Redis subscriber...")
 

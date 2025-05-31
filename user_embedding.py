@@ -1,5 +1,3 @@
-import json
-import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 # Create a combined text representation for each user
