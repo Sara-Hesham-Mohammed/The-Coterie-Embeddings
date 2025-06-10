@@ -1,10 +1,15 @@
 import json
 import redis
+import os
 import user_embedding as embedding_api
 
 print("Starting Redis subscriber...")
 
-r = redis.Redis(host='localhost', port=6379)
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+r = redis.from_url(redis_url)
+
+# r = redis.Redis(host='localhost', port=6379)
+
 pubsub = r.pubsub()
 pubsub.subscribe("user_created")
 

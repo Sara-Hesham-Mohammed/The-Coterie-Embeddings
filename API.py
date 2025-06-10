@@ -1,7 +1,7 @@
 import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from User_Model import User
+from user_DTO import UserDTO
 from user_embedding import create_user_text, get_embedding
 
 app = FastAPI()
@@ -20,7 +20,7 @@ async def root():
 
 #### EMBEDDING ENDPOINT ####
 @app.post("/get-embedding/")
-async def store_embedding(user: User):
+async def store_embedding(user: UserDTO):
     # serialise the user pydantic object to a dictionary
     user_dict = user.model_dump()
     usr_text = create_user_text(user_dict)
