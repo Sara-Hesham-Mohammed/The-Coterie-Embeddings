@@ -3,9 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from user_DTO import UserDTO
 from user_embedding import create_user_text, get_embedding
-
+from fastapi import HTTPException
 app = FastAPI()
-#to be able to send requests using html file?
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -16,15 +16,27 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "This is the python backend for the embeddings and clustering(group formation)."}
+    return {"message": "Welcome to the python backend for the embeddings."}
 
-#### EMBEDDING ENDPOINT ####
+
 @app.post("/get-embedding/")
-async def store_embedding(user: UserDTO):
-    # serialise the user pydantic object to a dictionary
-    user_dict = user.model_dump()
-    usr_text = create_user_text(user_dict)
-    embedding = get_embedding(usr_text)
-    #this is what will get sent to the database service API (node.js)
-    json_data = json.dumps({"embedding": embedding.tolist()})
+async def return_embedding(request: dict):  # Accept any dict
+    # Ensure the request is a valid JSON object and transform to string so it can be validated with the bbuilt in pydantic model
+    req = json.dumps(request)
+    # Convert the incoming request to UserDTO for validation
+    user_dto = UserDTO.model_validate_json(req)
+
+    if not user_dto:
+        print("Conversion failed!")
+        raise HTTPException(status_code=422,
+                            detail="Invalid user data - missing one of the required fields: id, tags, country, languages")
+
+    user = user_dto.model_dump()
+    interest, location_lang = create_user_text(user)
+    interest_embedding = get_embedding(interest, 0.7)
+    location_lang_embedding = get_embedding(location_lang, 0.3)
+
+    # DB service API (node.js) response
+    json_data = {"interest_embedding": interest_embedding.tolist(),
+                            "location_lang_embedding": location_lang_embedding.tolist()}
     return json_data
